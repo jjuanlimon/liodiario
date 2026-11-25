@@ -1,0 +1,74 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import NoticiaCard from '../../components/NoticiaCard.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import { SITE, slugify } from '../../config';
+import { getNoticias, fechaLarga, youtubeId, type Noticia } from '../../lib/noticias';
+
+export async function getStaticPaths() {
+  const all = await getNoticias();
+  return all.map((noticia) => ({ params: { id: noticia.id }, props: { noticia, all } }));
+}
+
+interface Props { noticia: Noticia; all: Noticia[] }
+const { noticia, all } = Astro.props;
+const { title, description, date, category, image, imageAlt, video } = noticia.data;
+const { Content } = await render(noticia);
+const yt = youtubeId(video);
+const url = new URL(`/noticias/${noticia.id}/`, SITE.url).href;
+const shareImage = image || (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : null);
+const related = [
+  ...all.filter((n) => n.id !== noticia.id && n.data.category === category),
+  ...all.filter((n) => n.id !== noticia.id && n.data.category !== category),
+].slice(0, 3);
+---
+<Base title={title} description={description || title} image={shareImage} type="article" publishedTime={date}>
+  <article class="article">
+    <header class="article-head">
+      <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
+      <h1 class="article-title">{title}</h1>
+      {description && <p class="article-lead">{description}</p>}
+      <time class="card-date" datetime={date.toISOString()}>{fechaLarga(date)}</time>
+    </header>
+
+    <figure class="article-media">
+      {yt ? (
+        <div class="video">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${yt}`}
+            title={title}
+            loading="lazy"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      ) : image ? (
+        <img src={image} alt={imageAlt || title} width="1200" height="675" />
+      ) : null}
+      {imageAlt && !yt && <figcaption>{imageAlt}</figcaption>}
+    </figure>
+
+    <ShareButtons url={url} title={title} />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <AdSlot />
+
+    <p class="article-disclaimer">⚠️ {SITE.disclaimer}</p>
+
+    <ShareButtons url={url} title={title} />
+  </article>
+
+  {related.length > 0 && (
+    <section aria-labelledby="mas">
+      <h2 id="mas" class="section-title">Más líos</h2>
+      <div class="grid">
+        {related.map((n) => <NoticiaCard noticia={n} />)}
+      </div>
+    </section>
+  )}
+</Base>

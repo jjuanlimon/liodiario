@@ -1,0 +1,26 @@
+---
+// Espacio para anuncios de Google AdSense.
+// Mientras ADSENSE.enabled sea false, en el sitio publicado no se ve nada.
+// En la vista previa de tu computadora se ve un recuadro para saber dónde irá.
+import { ADSENSE } from '../config';
+interface Props { slot?: string }
+const { slot = '' } = Astro.props;
+const active = ADSENSE.enabled && ADSENSE.client;
+const dev = import.meta.env.DEV;
+---
+{active ? (
+  <aside class="ad" aria-label="Publicidad">
+    <span class="ad-label">Publicidad</span>
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={ADSENSE.client}
+      data-ad-slot={slot}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    ></ins>
+    <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+) : dev ? (
+  <aside class="ad ad--placeholder" aria-hidden="true">Espacio para anuncio (AdSense)</aside>
+) : null}

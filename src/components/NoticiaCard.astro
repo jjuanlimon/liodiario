@@ -1,0 +1,25 @@
+---
+import type { Noticia } from '../lib/noticias';
+import { fechaLarga, youtubeId } from '../lib/noticias';
+import { slugify } from '../config';
+
+interface Props { noticia: Noticia; lead?: boolean }
+const { noticia, lead = false } = Astro.props;
+const { title, description, date, category, image, imageAlt, video } = noticia.data;
+const href = `/noticias/${noticia.id}/`;
+const yt = youtubeId(video);
+const thumb = image || (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : '/og-default.jpg');
+const Heading = lead ? 'h2' : 'h3';
+---
+<article class:list={['card', { 'card--lead': lead }]}>
+  <a href={href} class="card-media">
+    <img src={thumb} alt={imageAlt || title} loading={lead ? 'eager' : 'lazy'} width="1200" height="675" />
+    {yt && <span class="play-badge" aria-label="Tiene video">▶ VIDEO</span>}
+  </a>
+  <div class="card-body">
+    <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
+    <Heading class="card-title"><a href={href}>{title}</a></Heading>
+    {description && <p class="card-desc">{description}</p>}
+    <time class="card-date" datetime={date.toISOString()}>{fechaLarga(date)}</time>
+  </div>
+</article>

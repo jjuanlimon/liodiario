@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config';
+---
+<Base title="Quiénes somos" description="Lío Diario es un periódico de mentira hecho en la República Dominicana para reírnos de lo que nos pasa todos los días.">
+  <article class="article page">
+    <h1 class="article-title">Quiénes somos</h1>
+    <div class="prose">
+      <p><strong>Lío Diario</strong> es un periódico de mentira hecho en la República Dominicana. Nuestra misión es simple: reírnos de lo que nos pasa todos los días, desde el tapón de la mañana hasta el apagón de la noche.</p>
+      <p class="note-box">⚠️ <strong>{SITE.disclaimer}</strong> Ninguna de las historias publicadas aquí ocurrió de verdad. Los nombres, citas y situaciones son ficción. Si algo se parece a la realidad, es pura coincidencia.</p>
+      <h2>¿Qué hacemos?</h2>
+      <p>Escribimos noticias exageradas sobre política, deportes, farándula, el barrio, el tránsito y, por supuesto, los apagones. Todo con cariño, porque solo nos burlamos de lo que queremos.</p>
+      <h2>¿Por qué?</h2>
+      <p>Porque a veces la única forma de aguantar un tapón de dos horas es imaginando que el gobierno anunció un elevado que va directo a la luna.</p>
+      <h2>Contacto</h2>
+      <p>¿Tienes una idea para un lío? Escríbenos a <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    </div>
+  </article>
+</Base>

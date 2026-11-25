@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import NoticiaCard from '../../components/NoticiaCard.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import { CATEGORIES, slugify } from '../../config';
+import { getNoticias } from '../../lib/noticias';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { cat: slugify(c) }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const noticias = (await getNoticias()).filter((n) => n.data.category === category);
+---
+<Base title={category} description={`Noticias inventadas de ${category} en Lío Diario. Humor y sátira dominicana.`}>
+  <h1 class="page-title"><span class="chip chip--big">{category}</span></h1>
+  {noticias.length ? (
+    <div class="grid">
+      {noticias.map((n) => <NoticiaCard noticia={n} />)}
+    </div>
+  ) : (
+    <p class="empty">Todavía no hay líos en {category}. Tranquilo, que ya vendrán.</p>
+  )}
+  <AdSlot />
+</Base>

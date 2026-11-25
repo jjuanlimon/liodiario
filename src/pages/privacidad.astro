@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config';
+---
+<Base title="Política de privacidad" description="Cómo Lío Diario trata los datos de sus visitantes.">
+  <article class="article page">
+    <h1 class="article-title">Política de privacidad</h1>
+    <div class="prose">
+      <p>En Lío Diario (liodiario.com) respetamos tu privacidad. Esta página explica qué información se recoge cuando visitas el sitio.</p>
+      <h2>Información que recogemos</h2>
+      <p>No pedimos que te registres ni guardamos tu nombre, correo o teléfono. Nuestro proveedor de alojamiento (Cloudflare) puede registrar datos técnicos básicos, como tu dirección IP o el tipo de navegador, para mantener el sitio seguro y funcionando.</p>
+      <h2>Publicidad y cookies</h2>
+      <p>Este sitio puede mostrar anuncios de Google AdSense. Google y sus socios usan cookies para mostrar anuncios basados en tus visitas a este y otros sitios web. Puedes desactivar los anuncios personalizados en la <a href="https://adssettings.google.com" rel="noopener">configuración de anuncios de Google</a>. Para saber más, consulta <a href="https://policies.google.com/technologies/ads" rel="noopener">cómo usa Google la información de los sitios que usan sus servicios</a>.</p>
+      <h2>Botones para compartir</h2>
+      <p>Cuando usas los botones de WhatsApp, Facebook o X, sales de nuestro sitio y se aplican las políticas de privacidad de esas plataformas.</p>
+      <h2>Contacto</h2>
+      <p>Si tienes preguntas sobre esta política, escríbenos a <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+      <p><em>Última actualización: noviembre de 2026.</em></p>
+    </div>
+  </article>
+</Base>

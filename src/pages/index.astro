@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import NoticiaCard from '../components/NoticiaCard.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { getNoticias } from '../lib/noticias';
+
+const noticias = await getNoticias();
+// La noticia principal: la más reciente marcada como "principal", o si no, la más reciente.
+const lead = noticias.find((n) => n.data.featured) ?? noticias[0];
+const rest = noticias.filter((n) => n !== lead);
+---
+<Base>
+  <h1 class="sr-only">Lío Diario: noticias de humor y sátira dominicana</h1>
+  {lead ? (
+    <>
+      <NoticiaCard noticia={lead} lead />
+      <AdSlot />
+      {rest.length > 0 && (
+        <section aria-labelledby="ultimas">
+          <h2 id="ultimas" class="section-title">Últimos líos</h2>
+          <div class="grid">
+            {rest.map((n) => <NoticiaCard noticia={n} />)}
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+    <p class="empty">Todavía no hay noticias. ¡Ve al panel y publica la primera!</p>
+  )}
+</Base>
