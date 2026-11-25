@@ -9,7 +9,7 @@ export const SITE = {
   description:
     'Noticias inventadas de la República Dominicana. Humor y sátira sobre política, deportes, farándula, barrio, tránsito y apagones.',
   disclaimer:
-    'Lío Diario es una página de humor y sátira. Todas las noticias son inventadas.',
+    'Lío Diario es una página de humor y sátira. Las noticias marcadas como SÁTIRA son inventadas.',
   email: 'contacto@liodiario.com',
   defaultImage: '/og-default.jpg',
 };

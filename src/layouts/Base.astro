@@ -8,6 +8,7 @@ interface Props {
   image?: string | null;
   type?: 'website' | 'article';
   publishedTime?: Date;
+  real?: boolean;
 }
 
 const {
@@ -16,12 +17,15 @@ const {
   image,
   type = 'website',
   publishedTime,
+  real = false,
 } = Astro.props;
 
 const fullTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} · Noticias de humor y sátira`;
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
 const ogImage = new URL(image || SITE.defaultImage, SITE.url).href;
 const current = Astro.url.pathname;
+const shareDescription = `${real ? '✅ NOTICIA REAL' : '😂 SÁTIRA'} · ${description}`;
+const siteName = real ? 'Lío Diario' : 'Lío Diario · Sátira';
 ---
 <!doctype html>
 <html lang="es-DO">
@@ -36,11 +40,11 @@ const current = Astro.url.pathname;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Vista previa al compartir (WhatsApp, Facebook, X) -->
-    <meta property="og:site_name" content="Lío Diario · Sátira" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content="es_DO" />
     <meta property="og:type" content={type} />
     <meta property="og:title" content={title ?? SITE.name} />
-    <meta property="og:description" content={`😂 SÁTIRA · ${description}`} />
+    <meta property="og:description" content={shareDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:secure_url" content={ogImage} />
@@ -50,7 +54,7 @@ const current = Astro.url.pathname;
     {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title ?? SITE.name} />
-    <meta name="twitter:description" content={`😂 SÁTIRA · ${description}`} />
+    <meta name="twitter:description" content={shareDescription} />
     <meta name="twitter:image" content={ogImage} />
 
     <!-- Letra Montserrat -->
@@ -112,7 +116,7 @@ const current = Astro.url.pathname;
           <img src="/logo-192.png" width="44" height="44" alt="" class="brand-logo" />
           <strong>LÍO DIARIO</strong>
         </div>
-        <p class="footer-disclaimer">{SITE.disclaimer} Cualquier parecido con la realidad es pura coincidencia (o culpa del país).</p>
+        <p class="footer-disclaimer">{SITE.disclaimer} Las noticias reales llevan la etiqueta ✅ REAL y su fuente. En las demás, cualquier parecido con la realidad es pura coincidencia (o culpa del país).</p>
         <ul class="footer-links">
           <li><a href="/quienes-somos/">Quiénes somos</a></li>
           <li><a href="/privacidad/">Política de privacidad</a></li>

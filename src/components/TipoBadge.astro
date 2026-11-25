@@ -1,0 +1,10 @@
+---
+// Etiqueta que dice si una noticia es SÁTIRA (inventada) o REAL
+interface Props { real?: boolean }
+const { real = false } = Astro.props;
+---
+{real ? (
+  <span class="tipo tipo--real" title="Noticia real, con fuente">✅ REAL</span>
+) : (
+  <span class="tipo tipo--satira" title="Noticia inventada (humor)">😂 SÁTIRA</span>
+)}

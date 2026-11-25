@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import NoticiaCard from '../../components/NoticiaCard.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import AdSlot from '../../components/AdSlot.astro';
+import TipoBadge from '../../components/TipoBadge.astro';
 import { SITE, slugify } from '../../config';
 import { getNoticias, fechaLarga, youtubeId, type Noticia } from '../../lib/noticias';
 
@@ -14,7 +15,7 @@ export async function getStaticPaths() {
 
 interface Props { noticia: Noticia; all: Noticia[] }
 const { noticia, all } = Astro.props;
-const { title, description, date, category, image, imageAlt, video } = noticia.data;
+const { title, description, date, category, image, imageAlt, video, real, source, sourceUrl } = noticia.data;
 const { Content } = await render(noticia);
 const yt = youtubeId(video);
 const url = new URL(`/noticias/${noticia.id}/`, SITE.url).href;
@@ -24,10 +25,13 @@ const related = [
   ...all.filter((n) => n.id !== noticia.id && n.data.category !== category),
 ].slice(0, 3);
 ---
-<Base title={title} description={description || title} image={shareImage} type="article" publishedTime={date}>
+<Base title={title} description={description || title} image={shareImage} type="article" publishedTime={date} real={real}>
   <article class="article">
     <header class="article-head">
-      <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
+      <div class="chips">
+        <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
+        <TipoBadge real={real} />
+      </div>
       <h1 class="article-title">{title}</h1>
       {description && <p class="article-lead">{description}</p>}
       <time class="card-date" datetime={date.toISOString()}>{fechaLarga(date)}</time>
@@ -50,7 +54,7 @@ const related = [
       {imageAlt && !yt && <figcaption>{imageAlt}</figcaption>}
     </figure>
 
-    <ShareButtons url={url} title={title} />
+    <ShareButtons url={url} title={title} real={real} />
 
     <div class="prose">
       <Content />
@@ -58,9 +62,18 @@ const related = [
 
     <AdSlot />
 
-    <p class="article-disclaimer">⚠️ {SITE.disclaimer}</p>
+    {real ? (
+      <p class="article-disclaimer article-disclaimer--real">
+        ✅ <strong>Esta es una noticia real.</strong>
+        {source && (
+          <> Fuente: {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener nofollow">{source}</a> : source}.</>
+        )}
+      </p>
+    ) : (
+      <p class="article-disclaimer">😂 <strong>Esta noticia es SÁTIRA:</strong> es inventada y fue escrita para hacer reír.</p>
+    )}
 
-    <ShareButtons url={url} title={title} />
+    <ShareButtons url={url} title={title} real={real} />
   </article>
 
   {related.length > 0 && (

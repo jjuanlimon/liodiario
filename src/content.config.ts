@@ -14,6 +14,9 @@ const noticias = defineCollection({
     imageAlt: z.string().nullish().transform((v) => v ?? ''),
     video: z.string().nullish(),
     featured: z.boolean().nullish().transform((v) => v ?? false),
+    real: z.boolean().nullish().transform((v) => v ?? false),
+    source: z.string().nullish(),
+    sourceUrl: z.string().nullish(),
   }),
 });
 

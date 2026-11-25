@@ -43,6 +43,16 @@ content:
       - name: video
         label: "Enlace de video de YouTube (opcional, se muestra en vez de la foto)"
         type: string
+      - name: real
+        label: "¿Es una NOTICIA REAL? (apagado = sátira inventada)"
+        type: boolean
+        default: false
+      - name: source
+        label: "Fuente de la noticia real (ej.: Diario Libre). Escríbela con tus palabras, no copies."
+        type: string
+      - name: sourceUrl
+        label: "Enlace a la noticia original (opcional)"
+        type: string
       - name: featured
         label: "¿Poner como noticia principal de la portada?"
         type: boolean

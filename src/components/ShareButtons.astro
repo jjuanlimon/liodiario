@@ -1,8 +1,8 @@
 ---
-interface Props { url: string; title: string }
-const { url, title } = Astro.props;
+interface Props { url: string; title: string; real?: boolean }
+const { url, title, real = false } = Astro.props;
 const u = encodeURIComponent(url);
-const text = encodeURIComponent(`${title} 😂 (sátira de Lío Diario)`);
+const text = encodeURIComponent(real ? `✅ ${title} (vía Lío Diario)` : `${title} 😂 (sátira de Lío Diario)`);
 const links = {
   whatsapp: `https://wa.me/?text=${text}%20${u}`,
   facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
