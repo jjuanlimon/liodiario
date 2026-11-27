@@ -8,7 +8,7 @@ date: 2026-11-27
 category: Deportes
 image: /images/noticias/IMG_6202.jpeg
 imageAlt: Francisco Cervelli, Manager de las Aguilas Cibaeñas
-real: false
+real: true
 featured: false
 ---
 SANTIAGO.– Tras otra noche difícil para las Águilas Cibaeñas, el manager del conjunto amarillo compareció ante la prensa con el celular en la mano y los ojos rojos, y prometió que a partir de hoy no volverá a ver La Casa de Alofoke 3 durante los partidos.
