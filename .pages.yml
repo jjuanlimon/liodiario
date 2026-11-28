@@ -33,7 +33,7 @@ content:
         type: select
         required: true
         options:
-          values: [Política, Deportes, Farándula, Barrio, Tránsito, Apagones]
+          values: [Política, Deportes, Farándula, Entretenimiento, Tránsito]
       - name: image
         label: "Foto principal (horizontal queda mejor)"
         type: image

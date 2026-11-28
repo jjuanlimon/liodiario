@@ -1,0 +1,471 @@
+---
+import Base from '../layouts/Base.astro';
+import { TRIVIA } from '../data/trivia';
+import { TEMA, PALABRAS } from '../data/crucigrama';
+import { armarCrucigrama } from '../lib/crucigrama';
+
+// Si alguien edita mal la trivia, el sitio no se publica y dice qué arreglar.
+if (TRIVIA.length !== 31) throw new Error(`La trivia debe tener 31 preguntas y tiene ${TRIVIA.length}.`);
+TRIVIA.forEach((t, i) => {
+  if (!t.opciones.includes(t.respuesta)) throw new Error(`Trivia, pregunta ${i + 1}: la respuesta "${t.respuesta}" no está en las opciones.`);
+});
+if (PALABRAS.length < 12 || PALABRAS.length > 20) throw new Error(`El crucigrama debe tener entre 12 y 20 palabras y tiene ${PALABRAS.length}.`);
+PALABRAS.forEach(({ palabra, pista }, i) => {
+  if (!/^[A-Z]{3,12}$/.test(palabra)) throw new Error(`Crucigrama, palabra ${i + 1} ("${palabra}"): solo MAYÚSCULAS sin tildes, sin Ñ ni espacios, de 3 a 12 letras.`);
+  if (!pista.trim()) throw new Error(`Crucigrama, palabra ${i + 1} ("${palabra}"): le falta la pista.`);
+  if (PALABRAS.findIndex((p) => p.palabra === palabra) !== i) throw new Error(`Crucigrama: la palabra "${palabra}" está repetida.`);
+});
+const cruci = armarCrucigrama(PALABRAS);
+if (cruci.faltan.length) throw new Error(`Crucigrama: no cupieron estas palabras: ${cruci.faltan.join(', ')}. Cámbialas por otras o quita algunas.`);
+---
+<Base title="Juegos" description="Juega la Trivia dominicana, Adivinao y Sudoku gratis en Lío Diario. Una partida nueva cada día.">
+  <h1 class="page-title"><span class="chip chip--big">Juegos</span></h1>
+
+  <h2 class="grupo">Juegos del día</h2>
+  <p class="ayuda centro">Una partida de cada uno por día. Se renuevan a medianoche.</p>
+
+  <section class="juego" aria-labelledby="t-trivia">
+    <h3 id="t-trivia">Trivia dominicana</h3>
+    <p class="ayuda">Una pregunta cada día y un solo chance. ¡Piénsalo bien!</p>
+    <p id="t-pregunta" class="t-pregunta"></p>
+    <div id="t-opciones" class="t-opciones"></div>
+    <p id="t-msg" class="msg" role="status"></p>
+  </section>
+
+  <section class="juego" aria-labelledby="t-wordle">
+    <h3 id="t-wordle">Adivinao <small class="nivel">Difícil</small></h3>
+    <p class="ayuda">Adivina la palabra de hoy, de <b>6 letras</b>, en 6 intentos. 🟩 letra en su sitio · 🟨 está pero en otro sitio · ⬜ no está.<br />Modo difícil: las pistas que encuentres tienes que usarlas en el siguiente intento.</p>
+    <div id="w-tablero" class="w-tablero" aria-live="polite"></div>
+    <p id="w-msg" class="msg" role="status"></p>
+    <div id="w-teclado" class="w-teclado"></div>
+  </section>
+
+  <section class="juego" aria-labelledby="t-sudoku">
+    <h3 id="t-sudoku">Sudoku <small class="nivel">Difícil</small></h3>
+    <p class="ayuda">Llena cada fila, columna y cuadro de 3×3 con los números del 1 al 9 sin repetir. Tiene una sola solución.</p>
+    <div id="s-tablero" class="s-tablero"></div>
+    <p id="s-msg" class="msg" role="status"></p>
+  </section>
+
+  <h2 class="grupo">Juego del mes</h2>
+  <p class="ayuda centro">Tienes todo el mes para terminarlo. Tu avance se guarda en este teléfono o computadora.</p>
+
+  <section class="juego juego--ancho" aria-labelledby="t-cruci">
+    <h3 id="t-cruci">Crucigrama dominicano</h3>
+    <p class="ayuda">Tema del mes: <b>{TEMA}</b>. Toca una casilla o una pista para escribir. Toca dos veces la misma casilla para cambiar entre horizontal y vertical.</p>
+    <p id="c-actual" class="c-actual" aria-live="polite"></p>
+    <div class="c-zona"><div id="c-tablero" class="c-tablero"></div></div>
+    <script type="application/json" id="c-datos" set:html={JSON.stringify(cruci).replace(/</g, '\\u003c')} />
+    <p id="c-msg" class="msg" role="status"></p>
+    <div class="c-pistas">
+      <div><h4>Horizontales</h4><ol id="c-h"></ol></div>
+      <div><h4>Verticales</h4><ol id="c-v"></ol></div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .juego { max-width: 520px; margin: 0 auto 48px; text-align: center; }
+  .juego h3 { font-weight: 900; font-size: 28px; margin: 0 0 6px; }
+  .grupo { font-weight: 900; font-size: 22px; text-transform: uppercase; text-align: center; margin: 8px 0 4px; padding: 10px; background: var(--negro); color: var(--amarillo); border-radius: var(--radio); }
+  .centro { text-align: center; margin-bottom: 28px; }
+  .juego--ancho { max-width: 760px; }
+
+  .c-actual { min-height: 1.5em; font-weight: 800; background: var(--amarillo-claro); border-radius: var(--radio); padding: 8px 12px; margin: 0 0 12px; }
+  .c-zona { overflow-x: auto; padding-bottom: 4px; }
+  .c-tablero { display: grid; width: max-content; margin: 0 auto; --cw: max(20px, min(34px, calc((100vw - 36px) / var(--cols, 17)))); }
+  .c-tablero :global(.cc) { width: var(--cw); height: var(--cw); position: relative; outline: 1px solid var(--negro); background: var(--fondo); }
+  .c-tablero :global(.cc.activa) { background: var(--amarillo-claro); }
+  .c-tablero :global(.cc input) { width: 100%; height: 100%; border: 0; padding: 0; background: transparent; text-align: center; font: inherit; font-weight: 800; font-size: 16px; text-transform: uppercase; color: var(--negro); }
+  .c-tablero :global(.cc input:focus) { outline: 3px solid var(--amarillo); outline-offset: -3px; }
+  .c-tablero :global(.cc .n) { position: absolute; top: 0; left: 1px; font-size: 8px; line-height: 1; font-weight: 800; pointer-events: none; }
+  .c-pistas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; text-align: left; }
+  .c-pistas h4 { font-weight: 900; margin: 0 0 6px; }
+  .c-pistas ol { list-style: none; padding: 0; margin: 0; }
+  .c-pistas :global(button) { font: inherit; font-size: 14px; text-align: left; width: 100%; background: none; border: 0; border-radius: 6px; padding: 5px 6px; cursor: pointer; color: var(--negro); }
+  .c-pistas :global(button.activa) { background: var(--amarillo-claro); font-weight: 800; }
+  .c-pistas :global(button.hecha) { text-decoration: line-through; color: var(--gris); }
+  .nivel { font-size: 13px; vertical-align: middle; background: var(--negro); color: var(--amarillo); padding: 3px 8px; border-radius: 6px; }
+  .ayuda { color: var(--gris); font-size: 14px; margin: 0 0 16px; }
+  .msg { min-height: 1.5em; font-weight: 800; margin: 12px 0; }
+  .t-pregunta { font-weight: 800; font-size: 20px; margin: 0 0 16px; }
+  .t-opciones { display: grid; gap: 10px; }
+  .t-opciones :global(.boton:disabled) { cursor: default; opacity: .55; }
+  .t-opciones :global(.boton.ok), .t-opciones :global(.boton.no) { opacity: 1; }
+  .t-opciones :global(.boton) { font: inherit; font-weight: 800; background: var(--amarillo); color: var(--negro); border: 2px solid var(--negro); border-radius: var(--radio); padding: 10px 18px; cursor: pointer; }
+
+  .w-tablero { display: grid; grid-template-rows: repeat(6, 1fr); gap: 6px; width: min(380px, 100%); margin: 0 auto; }
+  .w-tablero :global(.fila) { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .w-tablero :global(.celda) { aspect-ratio: 1; display: grid; place-items: center; border: 2px solid var(--linea); font-weight: 900; font-size: clamp(20px, 6vw, 28px); text-transform: uppercase; }
+  .w-teclado { display: grid; gap: 6px; }
+  .w-teclado :global(.tfila) { display: flex; justify-content: center; gap: 4px; }
+  .w-teclado :global(button) { font: inherit; font-weight: 800; flex: 1; max-width: 42px; height: 52px; border: 0; border-radius: 6px; background: var(--linea); color: var(--negro); cursor: pointer; padding: 0; }
+  .w-teclado :global(button.ancho) { max-width: 70px; flex: 1.6; font-size: 12px; }
+  :global(.ok) { background: #3a9d3a !important; border-color: #3a9d3a !important; color: #fff !important; }
+  :global(.casi) { background: #d9b100 !important; border-color: #d9b100 !important; color: #fff !important; }
+  :global(.no) { background: #787878 !important; border-color: #787878 !important; color: #fff !important; }
+
+  .s-tablero { display: grid; grid-template-columns: repeat(9, 1fr); width: min(450px, 100%); margin: 0 auto; border: 3px solid var(--negro); }
+  .s-tablero :global(input) { width: 100%; aspect-ratio: 1; border: 1px solid var(--linea); text-align: center; font: inherit; font-weight: 800; font-size: clamp(16px, 5vw, 24px); padding: 0; color: #1f5fbf; background: var(--fondo); border-radius: 0; }
+  .s-tablero :global(input[readonly]) { color: var(--negro); background: var(--amarillo-claro); }
+  .s-tablero :global(input.bd) { border-right: 3px solid var(--negro); }
+  .s-tablero :global(input.bb) { border-bottom: 3px solid var(--negro); }
+  .s-tablero :global(input.mal) { background: #ffd6d6; color: #b00000; }
+</style>
+
+<script>
+  import { TRIVIA } from '../data/trivia';
+  import { crearAzar, barajar as barajarCon, type Colocada } from '../lib/crucigrama';
+
+  // Número del día según la hora local: cambia a medianoche para todos los juegos.
+  const dia = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+
+  // Lo jugado hoy se guarda en el navegador; si es de otro día, se ignora.
+  // shortcut: en modo incógnito u otro navegador se puede volver a jugar; para evitarlo haría falta un servidor con cuentas.
+  // "periodo" es el día (juegos diarios) o el mes (crucigrama).
+  function cargar(juego: string, periodo = dia) {
+    try {
+      const v = JSON.parse(localStorage.getItem('lio-' + juego) || 'null');
+      return v && v.dia === periodo ? v : null;
+    } catch { return null; }
+  }
+  function guardar(juego: string, datos: object, periodo = dia) {
+    try { localStorage.setItem('lio-' + juego, JSON.stringify({ ...datos, dia: periodo })); } catch {}
+  }
+
+  // ================= TRIVIA =================
+  const q = TRIVIA[new Date().getDate() - 1];
+  document.getElementById('t-pregunta')!.textContent = q.pregunta;
+  const tOpciones = document.getElementById('t-opciones')!;
+  const tMsg = document.getElementById('t-msg')!;
+  const botones = q.opciones.map((texto) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'boton';
+    b.textContent = texto;
+    b.addEventListener('click', () => responder(texto));
+    return tOpciones.appendChild(b);
+  });
+  function responder(elegida: string) {
+    botones.forEach((b) => {
+      b.disabled = true;
+      if (b.textContent === q.respuesta) b.classList.add('ok');
+      else if (b.textContent === elegida) b.classList.add('no');
+    });
+    tMsg.textContent = `${elegida === q.respuesta ? '¡Correcto! 🇩🇴' : '¡Fallaste!'} ${q.dato} Vuelve mañana por otra pregunta.`;
+    guardar('trivia', { elegida });
+  }
+  const triviaHoy = cargar('trivia');
+  if (triviaHoy) responder(triviaHoy.elegida);
+
+  // ================= ADIVINAO (Wordle difícil) =================
+  // Palabras de 6 letras sin tilde ni Ñ. Para añadir más, ponlas aquí en MAYÚSCULAS.
+  const PALABRAS = ['GUAGUA','NEVERA','SUEGRA','VECINO','PLANTA','TOSTON','CHISTE','PELOTA','CASABE','YAUTIA','AUYAMA','LOCRIO','PASTEL','ACEITE','DIABLO','CARETA','JUERGA','TAMBOR','BOLERO','PALOMO','CHAPEO','JEVITA','CUARTO','FIESTA','VERANO','BARRIO','CONCHO','CHOFER','PASAJE','APAGON','ESTUFA','SARTEN','LAGUNA','SABANA','CAMION','DOMINO','SALAMI','ASOPAO','BATIDO','CHINAS','GUINEO','CAJUIL','ZAPOTE','CEREZA','TRAGOS','CALLES','PLAYAS','PALMAS','DULCES','GALLOS','TIGRES','PRIMOS','PERICO','COCINA','TIENDA','VAINAS','POLLOS','PESETA','BACHES','LUCERO'];
+  const LARGO = 6;
+  const secreta = PALABRAS[dia % PALABRAS.length];
+
+  // Colores de un intento; las letras repetidas se cuentan bien (2 pasadas).
+  function puntuar(intento: string, sol: string) {
+    const res = Array(LARGO).fill('no');
+    const quedan: Record<string, number> = {};
+    for (let i = 0; i < LARGO; i++) {
+      if (intento[i] === sol[i]) res[i] = 'ok';
+      else quedan[sol[i]] = (quedan[sol[i]] || 0) + 1;
+    }
+    for (let i = 0; i < LARGO; i++) {
+      if (res[i] !== 'ok' && quedan[intento[i]]) { res[i] = 'casi'; quedan[intento[i]]--; }
+    }
+    return res;
+  }
+
+  // Modo difícil: las verdes se quedan en su sitio y las amarillas hay que usarlas.
+  function faltaPista(intento: string) {
+    for (const previo of intentos) {
+      const colores = puntuar(previo, secreta);
+      for (let i = 0; i < LARGO; i++) {
+        if (colores[i] === 'ok' && intento[i] !== previo[i]) return `La letra ${i + 1} tiene que ser ${previo[i]}`;
+      }
+      const necesita: Record<string, number> = {};
+      colores.forEach((c, i) => { if (c !== 'no') necesita[previo[i]] = (necesita[previo[i]] || 0) + 1; });
+      for (const [letra, n] of Object.entries(necesita)) {
+        if ([...intento].filter((x) => x === letra).length < n) return `Tienes que usar la ${letra}`;
+      }
+    }
+    return '';
+  }
+
+  const tablero = document.getElementById('w-tablero')!;
+  const teclado = document.getElementById('w-teclado')!;
+  const wMsg = document.getElementById('w-msg')!;
+  const filas: HTMLElement[][] = [];
+  for (let f = 0; f < 6; f++) {
+    const fila = document.createElement('div');
+    fila.className = 'fila';
+    filas.push(Array.from({ length: LARGO }, () => fila.appendChild(document.createElement('div'))));
+    filas[f].forEach((c) => (c.className = 'celda'));
+    tablero.appendChild(fila);
+  }
+  const teclas: Record<string, HTMLButtonElement> = {};
+  ['QWERTYUIOP', 'ASDFGHJKL', '↵ZXCVBNM⌫'].forEach((linea) => {
+    const div = document.createElement('div');
+    div.className = 'tfila';
+    for (const k of linea) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = k === '↵' ? 'ENVIAR' : k === '⌫' ? 'BORRAR' : k;
+      if (k === '↵' || k === '⌫') b.className = 'ancho';
+      b.setAttribute('aria-label', k === '↵' ? 'Enviar' : k === '⌫' ? 'Borrar' : k);
+      b.addEventListener('click', () => tecla(k === '↵' ? 'Enter' : k === '⌫' ? 'Backspace' : k));
+      teclas[k] = b;
+      div.appendChild(b);
+    }
+    teclado.appendChild(div);
+  });
+
+  let fila = 0, actual = '', terminado = false;
+  const intentos: string[] = [];
+  const rango = { ok: 3, casi: 2, no: 1 } as Record<string, number>;
+  function tecla(k: string) {
+    if (terminado) return;
+    if (k === 'Backspace') actual = actual.slice(0, -1);
+    else if (k === 'Enter') {
+      if (actual.length < LARGO) { wMsg.textContent = 'Faltan letras'; return; }
+      const falta = faltaPista(actual);
+      if (falta) { wMsg.textContent = falta; return; }
+      intentos.push(actual);
+      guardar('adivinao', { intentos });
+      const colores = puntuar(actual, secreta);
+      colores.forEach((c, i) => {
+        filas[fila][i].classList.add(c);
+        const b = teclas[actual[i]];
+        const previo = ['ok', 'casi', 'no'].find((x) => b.classList.contains(x));
+        if (!previo || rango[c] > rango[previo]) { b.classList.remove('ok', 'casi', 'no'); b.classList.add(c); }
+      });
+      if (actual === secreta) { wMsg.textContent = '¡Tremendo! La pegaste 🎉 Vuelve mañana por otra palabra.'; terminado = true; }
+      else if (++fila === 6) { wMsg.textContent = `Ay no… era ${secreta}. Mañana hay otra.`; terminado = true; }
+      else wMsg.textContent = '';
+      actual = '';
+      return;
+    } else if (/^[A-Z]$/.test(k) && actual.length < LARGO) actual += k;
+    filas[fila]?.forEach((c, i) => (c.textContent = actual[i] || ''));
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement).tagName === 'INPUT') return;
+    const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+    if (k === 'Enter' || k === 'Backspace' || /^[A-Z]$/.test(k)) { e.preventDefault(); tecla(k); }
+  });
+  // Repetir los intentos que ya hizo hoy (así recargar no da otra partida).
+  for (const g of cargar('adivinao')?.intentos ?? []) { [...g].forEach(tecla); tecla('Enter'); }
+
+  // ================= SUDOKU =================
+  const sTablero = document.getElementById('s-tablero')!;
+  const sMsg = document.getElementById('s-msg')!;
+  const celdas: HTMLInputElement[] = [];
+  for (let i = 0; i < 81; i++) {
+    const inp = document.createElement('input');
+    const r = Math.floor(i / 9), c = i % 9;
+    inp.inputMode = 'numeric';
+    inp.maxLength = 1;
+    inp.setAttribute('aria-label', `Fila ${r + 1}, columna ${c + 1}`);
+    if (c === 2 || c === 5) inp.classList.add('bd');
+    if (r === 2 || r === 5) inp.classList.add('bb');
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/[^1-9]/g, '');
+      guardar('sudoku', { valores: celdas.map((x) => x.value) });
+      revisar();
+    });
+    celdas.push(inp);
+    sTablero.appendChild(inp);
+  }
+
+  // Azar con semilla = el día: todo el mundo recibe el mismo sudoku hoy.
+  const azar = crearAzar(dia);
+  const barajar = <T,>(a: T[]) => barajarCon(a, azar);
+  // Tablero resuelto válido: patrón base + barajar filas/columnas dentro de su bloque y los números.
+  function resuelto() {
+    const orden = () => barajar([0, 1, 2]).flatMap((b) => barajar([0, 1, 2]).map((x) => b * 3 + x));
+    const filasO = orden(), colsO = orden(), nums = barajar([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    return filasO.flatMap((r) => colsO.map((c) => nums[(r * 3 + Math.floor(r / 3) + c) % 9]));
+  }
+
+  // Números que caben en la casilla i según su fila, columna y cuadro.
+  function candidatos(g: number[], i: number) {
+    const r = Math.floor(i / 9), c = i % 9, br = r - (r % 3), bc = c - (c % 3);
+    const usados = new Set<number>();
+    for (let k = 0; k < 9; k++) {
+      usados.add(g[r * 9 + k]); usados.add(g[k * 9 + c]);
+      usados.add(g[(br + Math.floor(k / 3)) * 9 + bc + (k % 3)]);
+    }
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((v) => !usados.has(v));
+  }
+  // Cuenta soluciones (se detiene al llegar a "limite"); empieza por la casilla con menos opciones.
+  function contarSoluciones(g: number[], limite = 2): number {
+    let mejor = -1, opciones: number[] = [];
+    for (let i = 0; i < 81; i++) {
+      if (g[i]) continue;
+      const c = candidatos(g, i);
+      if (!c.length) return 0;
+      if (mejor < 0 || c.length < opciones.length) { mejor = i; opciones = c; if (c.length === 1) break; }
+    }
+    if (mejor < 0) return 1;
+    let n = 0;
+    for (const v of opciones) {
+      g[mejor] = v;
+      n += contarSoluciones(g, limite - n);
+      if (n >= limite) break;
+    }
+    g[mejor] = 0;
+    return n;
+  }
+
+  // Nivel difícil: se quitan números mientras el sudoku siga teniendo UNA sola solución
+  // (suelen quedar 22–26 pistas, lo normal en un sudoku difícil).
+  function sudokuDelDia() {
+    const sol = resuelto();
+    const g = [...sol];
+    for (const i of barajar([...Array(81).keys()])) {
+      const antes = g[i];
+      g[i] = 0;
+      if (contarSoluciones([...g]) !== 1) g[i] = antes;
+    }
+    const vacias = new Set(g.flatMap((v, i) => (v ? [] : [i])));
+    const guardado: string[] = cargar('sudoku')?.valores ?? [];
+    celdas.forEach((inp, i) => {
+      inp.value = vacias.has(i) ? (guardado[i] || '') : String(sol[i]);
+      inp.readOnly = !vacias.has(i);
+    });
+    revisar();
+  }
+
+  // Se valida por las reglas (no contra una solución fija), así cualquier solución correcta gana.
+  function revisar() {
+    const v = celdas.map((x) => x.value);
+    let llenas = 0, errores = 0;
+    celdas.forEach((inp, i) => {
+      const r = Math.floor(i / 9), c = i % 9;
+      const choca = v[i] !== '' && v.some((x, j) => j !== i && x === v[i] && (
+        Math.floor(j / 9) === r || j % 9 === c ||
+        (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor((j % 9) / 3) === Math.floor(c / 3))));
+      inp.classList.toggle('mal', choca && !inp.readOnly);
+      if (v[i]) llenas++;
+      if (choca) errores++;
+    });
+    if (llenas === 81 && !errores) {
+      sMsg.textContent = '¡Lo resolviste! Eres un genio 🧠 Mañana hay otro.';
+      celdas.forEach((x) => (x.readOnly = true));
+    } else sMsg.textContent = '';
+  }
+
+  sudokuDelDia();
+
+  // ================= CRUCIGRAMA DEL MES =================
+  // El tablero se arma al publicar el sitio (ver la parte de arriba de este archivo).
+  // shortcut: las respuestas van en el código de la página (alguien experto podría verlas); esconderlas requiere un servidor.
+  const cruci: { puestas: Colocada[]; alto: number; ancho: number } = JSON.parse(document.getElementById('c-datos')!.textContent!);
+  const hoy = new Date();
+  const mes = hoy.getFullYear() * 12 + hoy.getMonth();
+  const clave = (f: number, c: number) => f + ',' + c;
+  const nums = new Map(cruci.puestas.map((p) => [clave(p.f, p.c), p.num]));
+  const cTablero = document.getElementById('c-tablero')!;
+  const cMsg = document.getElementById('c-msg')!;
+  const cActual = document.getElementById('c-actual')!;
+  const solucion = new Map<string, string>();
+  const entradas = new Map<string, HTMLInputElement>();
+  const casillasDe = (p: Colocada) => [...p.palabra].map((_, i) => clave(p.h ? p.f : p.f + i, p.h ? p.c + i : p.c));
+  cruci.puestas.forEach((p) => casillasDe(p).forEach((k, i) => solucion.set(k, p.palabra[i])));
+  const guardadoC = cargar('crucigrama', mes);
+  let activa: Colocada | null = null, ultimoToque = '';
+  let terminadoC = false;
+
+  const botonesPista = new Map<Colocada, HTMLButtonElement>();
+  function marcar(p: Colocada) {
+    activa = p;
+    document.querySelectorAll('.cc.activa, .c-pistas button.activa').forEach((e) => e.classList.remove('activa'));
+    casillasDe(p).forEach((k) => entradas.get(k)!.parentElement!.classList.add('activa'));
+    botonesPista.get(p)!.classList.add('activa');
+    cActual.textContent = `${p.num} ${p.h ? 'Horizontal' : 'Vertical'}: ${p.pista}`;
+  }
+  const contiene = (p: Colocada, k: string) => casillasDe(p).includes(k);
+
+  cTablero.style.setProperty('--cols', String(cruci.ancho));
+  cTablero.style.gridTemplateColumns = `repeat(${cruci.ancho}, var(--cw))`;
+  for (let f = 0; f < cruci.alto; f++) {
+    for (let c = 0; c < cruci.ancho; c++) {
+      const k = clave(f, c);
+      const div = document.createElement('div');
+      cTablero.appendChild(div);
+      if (!solucion.has(k)) continue;
+      div.className = 'cc';
+      if (nums.has(k)) {
+        const n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = String(nums.get(k));
+        div.appendChild(n);
+      }
+      const inp = document.createElement('input');
+      inp.autocomplete = 'off';
+      inp.setAttribute('autocapitalize', 'characters');
+      inp.setAttribute('aria-label', `Casilla fila ${f + 1}, columna ${c + 1}`);
+      inp.value = guardadoC?.letras?.[k] ?? '';
+      inp.addEventListener('focus', () => {
+        const opciones = cruci.puestas.filter((p) => contiene(p, k));
+        if (!activa || !contiene(activa, k)) marcar(opciones.find((p) => p.h === activa?.h) ?? opciones[0]);
+      });
+      inp.addEventListener('click', () => {
+        const opciones = cruci.puestas.filter((p) => contiene(p, k));
+        if (ultimoToque === k && opciones.length === 2) marcar(opciones.find((p) => p !== activa)!);
+        ultimoToque = k;
+      });
+      inp.addEventListener('input', (e) => {
+        const limpiar = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z]/g, '');
+        // "data" es lo que se acaba de escribir; si llegan varias letras juntas (pegar, autocompletar), se reparten.
+        const letras = limpiar((e as InputEvent).data ?? inp.value);
+        if (!letras || !activa) inp.value = letras.slice(-1);
+        else {
+          const cs = casillasDe(activa), desde = cs.indexOf(k);
+          [...letras].slice(0, cs.length - desde).forEach((l, j) => (entradas.get(cs[desde + j])!.value = l));
+          entradas.get(cs[Math.min(desde + letras.length, cs.length - 1)])!.focus();
+        }
+        guardarC();
+        revisarCruci();
+      });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key !== 'Backspace' || inp.value || inp.readOnly || !activa) return;
+        // Casilla vacía: retrocede y borra la anterior.
+        e.preventDefault();
+        const cs = casillasDe(activa), i = cs.indexOf(k);
+        if (i > 0) { const prev = entradas.get(cs[i - 1])!; prev.value = ''; prev.focus(); guardarC(); revisarCruci(); }
+      });
+      entradas.set(k, inp);
+      div.appendChild(inp);
+    }
+  }
+
+  for (const p of cruci.puestas) {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = `${p.num}. ${p.pista} (${p.palabra.length})`;
+    b.addEventListener('click', () => { marcar(p); entradas.get(casillasDe(p)[0])!.focus(); });
+    botonesPista.set(p, b);
+    li.appendChild(b);
+    document.getElementById(p.h ? 'c-h' : 'c-v')!.appendChild(li);
+  }
+
+  function guardarC() {
+    guardar('crucigrama', { letras: Object.fromEntries([...entradas].map(([k, e]) => [k, e.value])) }, mes);
+  }
+  function revisarCruci() {
+    // Tachar las pistas de las palabras que ya están bien.
+    for (const p of cruci.puestas) botonesPista.get(p)!.classList.toggle('hecha', casillasDe(p).every((k) => entradas.get(k)!.value === solucion.get(k)));
+    const vacias = [...entradas.values()].filter((e) => !e.value).length;
+    if (vacias) { cMsg.textContent = ''; return; }
+    const malas = [...entradas].filter(([k, e]) => e.value !== solucion.get(k)).length;
+    if (malas) { cMsg.textContent = `Hay ${malas} ${malas === 1 ? 'letra mal' : 'letras mal'}. ¡Sigue buscando!`; return; }
+    terminadoC = true;
+    entradas.forEach((e) => (e.readOnly = true));
+    cMsg.textContent = '¡Completaste el crucigrama del mes! 🎄 El mes que viene trae uno nuevo.';
+  }
+  revisarCruci();
+  if (!terminadoC) cActual.textContent = 'Toca una casilla o una pista para empezar.';
+</script>

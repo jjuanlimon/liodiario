@@ -4,7 +4,7 @@ description: "El streamer dominicano terminó GTA VI en 12 minutos con una
   técnica secreta: manejar como en la 27 a las 6 de la tarde. Rockstar revisa si
   el juego tiene un error."
 date: 2026-11-27
-category: Barrio
+category: Entretenimiento
 image: /images/noticias/IMG_6213.jpeg
 real: false
 featured: false
