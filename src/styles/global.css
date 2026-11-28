@@ -180,13 +180,7 @@ a { color: inherit; }
 .footer-links a { color: var(--amarillo); font-weight: 700; font-size: 14px; }
 .footer-copy { margin: 0; font-size: 12px; color: #999; }
 
-/* Etiquetas SÁTIRA / REAL */
+/* Categoría y nota del final (sátira / real) */
 .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.tipo {
-  display: inline-block; font-weight: 800; font-size: 12px; letter-spacing: 0.05em;
-  padding: 4px 10px; border-radius: 4px; text-transform: uppercase;
-}
-.tipo--satira { background: var(--negro); color: var(--amarillo); }
-.tipo--real { background: #1a7f37; color: #fff; }
 .article-disclaimer--real { background: #e8f6ec; border-color: #1a7f37; }
 .article-disclaimer a { color: inherit; text-decoration-thickness: 2px; }

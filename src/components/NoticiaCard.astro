@@ -2,11 +2,10 @@
 import type { Noticia } from '../lib/noticias';
 import { fechaLarga, youtubeId } from '../lib/noticias';
 import { slugify } from '../config';
-import TipoBadge from './TipoBadge.astro';
 
 interface Props { noticia: Noticia; lead?: boolean }
 const { noticia, lead = false } = Astro.props;
-const { title, description, date, category, image, imageAlt, video, real } = noticia.data;
+const { title, description, date, category, image, imageAlt, video } = noticia.data;
 const href = `/noticias/${noticia.id}/`;
 const yt = youtubeId(video);
 const thumb = image || (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : '/og-default.jpg');
@@ -20,7 +19,6 @@ const Heading = lead ? 'h2' : 'h3';
   <div class="card-body">
     <div class="chips">
       <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
-      <TipoBadge real={real} />
     </div>
     <Heading class="card-title"><a href={href}>{title}</a></Heading>
     {description && <p class="card-desc">{description}</p>}

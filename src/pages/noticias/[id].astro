@@ -4,7 +4,6 @@ import Base from '../../layouts/Base.astro';
 import NoticiaCard from '../../components/NoticiaCard.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import AdSlot from '../../components/AdSlot.astro';
-import TipoBadge from '../../components/TipoBadge.astro';
 import { SITE, slugify } from '../../config';
 import { getNoticias, fechaLarga, youtubeId, type Noticia } from '../../lib/noticias';
 
@@ -30,7 +29,6 @@ const related = [
     <header class="article-head">
       <div class="chips">
         <a class="chip" href={`/categoria/${slugify(category)}/`}>{category}</a>
-        <TipoBadge real={real} />
       </div>
       <h1 class="article-title">{title}</h1>
       {description && <p class="article-lead">{description}</p>}

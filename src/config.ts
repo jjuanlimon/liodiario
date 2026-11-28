@@ -9,7 +9,7 @@ export const SITE = {
   description:
     'Noticias inventadas de la República Dominicana. Humor y sátira sobre política, deportes, farándula, entretenimiento y actualidad. Y juegos: trivia, Adivinao y Sudoku.',
   disclaimer:
-    'Lío Diario es una página de humor y sátira. Las noticias marcadas como SÁTIRA son inventadas.',
+    'Lío Diario es una página de humor y sátira. Al final de cada noticia te decimos si es inventada o real.',
   email: 'contacto@liodiario.com',
   defaultImage: '/og-default.jpg',
 };
