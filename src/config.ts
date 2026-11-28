@@ -7,7 +7,7 @@ export const SITE = {
   name: 'Lío Diario',
   url: 'https://liodiario.com',
   description:
-    'Noticias inventadas de la República Dominicana. Humor y sátira sobre política, deportes, farándula, entretenimiento y tránsito. Y juegos: trivia, Adivinao y Sudoku.',
+    'Noticias inventadas de la República Dominicana. Humor y sátira sobre política, deportes, farándula, entretenimiento y actualidad. Y juegos: trivia, Adivinao y Sudoku.',
   disclaimer:
     'Lío Diario es una página de humor y sátira. Las noticias marcadas como SÁTIRA son inventadas.',
   email: 'contacto@liodiario.com',
@@ -20,7 +20,7 @@ export const CATEGORIES = [
   'Deportes',
   'Farándula',
   'Entretenimiento',
-  'Tránsito',
+  'Actualidad',
 ] as const;
 // "Juegos" no es categoría de noticias: es la página /juegos/ (enlace fijo en el menú, Base.astro)
 

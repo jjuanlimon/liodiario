@@ -8,5 +8,6 @@ export default defineConfig({
   redirects: {
     '/categoria/apagones': '/juegos',
     '/categoria/barrio': '/categoria/entretenimiento',
+    '/categoria/transito': '/categoria/actualidad',
   },
 });

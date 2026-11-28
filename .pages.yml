@@ -33,7 +33,7 @@ content:
         type: select
         required: true
         options:
-          values: [Política, Deportes, Farándula, Entretenimiento, Tránsito]
+          values: [Política, Deportes, Farándula, Entretenimiento, Actualidad]
       - name: image
         label: "Foto principal (horizontal queda mejor)"
         type: image
