@@ -16,11 +16,11 @@ export const SITE = {
 
 // Categorías del menú (el orden aquí es el orden del menú)
 export const CATEGORIES = [
-  'Política',
-  'Deportes',
+  'Actualidad',
   'Farándula',
   'Entretenimiento',
-  'Actualidad',
+  'Deportes',
+  'Política',
 ] as const;
 // "Juegos" no es categoría de noticias: es la página /juegos/ (enlace fijo en el menú, Base.astro)
 
